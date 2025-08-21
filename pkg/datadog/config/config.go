@@ -88,6 +88,9 @@ type Config struct {
 	// Logs defines the Logs exporter specific configuration
 	Logs LogsConfig `mapstructure:"logs"`
 
+	// Orchestrator defines the Orchestrator exporter specific configuration
+	Orchestrator OrchestratorConfig `mapstructure:"orchestrator"`
+
 	// HostMetadata defines the host metadata specific configuration
 	HostMetadata HostMetadataConfig `mapstructure:"host_metadata"`
 
@@ -298,6 +301,9 @@ func (c *Config) Unmarshal(configMap *confmap.Conf) error {
 	if !configMap.IsSet("logs::endpoint") {
 		c.Logs.Endpoint = fmt.Sprintf("https://http-intake.logs.%s", c.API.Site)
 	}
+	if !configMap.IsSet("orchestrator::endpoint") {
+		c.Orchestrator.Endpoint = fmt.Sprintf("https://orchestrator.%s", c.API.Site)
+	}
 
 	// Return an error if an endpoint is explicitly set to ""
 	if c.Metrics.Endpoint == "" || c.Traces.Endpoint == "" || c.Logs.Endpoint == "" {
@@ -374,6 +380,21 @@ func CreateDefaultConfig() component.Config {
 			UseCompression:   true,
 			CompressionLevel: 6,
 			BatchWait:        5,
+		},
+
+		Orchestrator: OrchestratorConfig{
+			TCPAddrConfig: confignet.TCPAddrConfig{
+				Endpoint: "https://orchestrator.datadoghq.com",
+			},
+			UseCompression:      true,
+			CompressionLevel:    6,
+			BatchWait:           5,
+			ClusterChecksEnabled: true,
+			CollectEvents:        true,
+			LeaderElection:       false,
+			LeaderLeaseDuration:  15,
+			LeaderRenewDeadline:  10,
+			LeaderRetryPeriod:    2,
 		},
 
 		HostMetadata: HostMetadataConfig{

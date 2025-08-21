@@ -37,6 +37,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/datadogexporter/internal/metadata"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/datadogexporter/internal/orchestrator"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/datadog/clientutil"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/datadog/hostmetadata"
 	datadogconfig "github.com/open-telemetry/opentelemetry-collector-contrib/pkg/datadog/config"
@@ -578,6 +579,15 @@ func (f *factory) createLogsExporter(
 			}
 			return nil
 		}
+	case cfg.Orchestrator.ClusterName != "":
+		// Use orchestrator exporter for Kubernetes resource manifests
+		hostnameProvider := orchestrator.NewHostnameProvider(hostProvider)
+		exp, err := newOrchestratorExporter(set, cfg, hostnameProvider)
+		if err != nil {
+			cancel()
+			return nil, err
+		}
+		pusher = exp.ConsumeLogs
 	default:
 		la, exp, err := newLogsAgentExporter(ctx, set, cfg, hostProvider, f.gatewayUsage)
 		if err != nil {
