@@ -9,13 +9,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
-	agentmodel "github.com/DataDog/agent-payload/v5/process"
 	"go.opentelemetry.io/collector/exporter"
 	"go.opentelemetry.io/collector/pdata/pcommon"
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.uber.org/zap"
+
+	agentmodel "github.com/DataDog/agent-payload/v5/process"
 
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/datadogexporter/internal/orchestrator"
 	datadogconfig "github.com/open-telemetry/opentelemetry-collector-contrib/pkg/datadog/config"
@@ -133,6 +135,7 @@ func (e *orchestratorExporter) convertToCollectorManifest(logRecord plog.LogReco
 	// Create the collector manifest payload
 	collectorManifest := &agentmodel.CollectorManifest{
 		ClusterName: e.config.Orchestrator.ClusterName,
+		ClusterId:   "12345689",
 		HostName:    e.hostname,
 		Manifests:   []*agentmodel.Manifest{manifest},
 		Tags:        tags,
@@ -145,46 +148,42 @@ func (e *orchestratorExporter) convertToCollectorManifest(logRecord plog.LogReco
 func (e *orchestratorExporter) getManifestType(kind string) int {
 	switch kind {
 	case "Pod":
-		return int(agentmodel.TypeCollectorPod)
+		return int(K8sPod)
 	case "Deployment":
-		return int(agentmodel.TypeCollectorDeployment)
+		return int(K8sDeployment)
 	case "Service":
-		return int(agentmodel.TypeCollectorService)
+		return int(K8sService)
 	case "Node":
-		return int(agentmodel.TypeCollectorNode)
+		return int(K8sNode)
 	case "Namespace":
-		return int(agentmodel.TypeCollectorNamespace)
+		return int(K8sNamespace)
 	case "ReplicaSet":
-		return int(agentmodel.TypeCollectorReplicaSet)
+		return int(K8sReplicaSet)
 	case "DaemonSet":
-		return int(agentmodel.TypeCollectorDaemonSet)
+		return int(K8sDaemonSet)
 	case "StatefulSet":
-		return int(agentmodel.TypeCollectorStatefulSet)
+		return int(K8sStatefulSet)
 	case "Job":
-		return int(agentmodel.TypeCollectorJob)
+		return int(K8sJob)
 	case "CronJob":
-		return int(agentmodel.TypeCollectorCronJob)
+		return int(K8sCronJob)
 	case "PersistentVolume":
-		return int(agentmodel.TypeCollectorPersistentVolume)
+		return int(K8sPersistentVolume)
 	case "PersistentVolumeClaim":
-		return int(agentmodel.TypeCollectorPersistentVolumeClaim)
-	case "ConfigMap":
-		return int(agentmodel.TypeCollectorManifest)
-	case "Secret":
-		return int(agentmodel.TypeCollectorManifest)
+		return int(K8sPersistentVolumeClaim)
 	case "Ingress":
-		return int(agentmodel.TypeCollectorIngress)
+		return int(K8sIngress)
 	case "NetworkPolicy":
-		return int(agentmodel.TypeCollectorNetworkPolicy)
+		return int(K8sNetworkPolicy)
 	case "StorageClass":
-		return int(agentmodel.TypeCollectorStorageClass)
+		return int(K8sStorageClass)
 	case "LimitRange":
-		return int(agentmodel.TypeCollectorLimitRange)
+		return int(K8sLimitRange)
 	case "PodDisruptionBudget":
-		return int(agentmodel.TypeCollectorPodDisruptionBudget)
+		return int(K8sPodDisruptionBudget)
 	default:
 		// For unknown types, use the generic manifest type
-		return int(agentmodel.TypeCollectorManifest)
+		return int(K8sUnsetType)
 	}
 }
 
@@ -212,20 +211,26 @@ func (e *orchestratorExporter) buildTags(resource pcommon.Resource, logRecord pl
 
 // sendToOrchestratorEndpoint sends the collector manifest to DataDog's Orchestrator endpoint
 func (e *orchestratorExporter) sendToOrchestratorEndpoint(ctx context.Context, payload *agentmodel.CollectorManifest) error {
-	// Marshal the payload to protobuf
-	protoData, err := payload.Marshal()
-	if err != nil {
-		return fmt.Errorf("failed to marshal collector manifest: %w", err)
-	}
 
 	// Determine the endpoint
 	endpoint := e.config.Orchestrator.Endpoint
 	if endpoint == "" {
 		endpoint = fmt.Sprintf("https://orchestrator.%s", e.config.API.Site)
 	}
+	endpoint = endpoint + "/api/v2/orchmanif"
+
+	encoded, err := agentmodel.EncodeMessage(agentmodel.Message{
+		Header: agentmodel.MessageHeader{
+			Version:  agentmodel.MessageV3,
+			Encoding: agentmodel.MessageEncodingZstdPBxNoCgo,
+			Type:     agentmodel.TypeCollectorManifest,
+		}, Body: payload})
+	if err != nil {
+		return fmt.Errorf("failed to encode payload: %w", err)
+	}
 
 	// Create the request
-	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, bytes.NewReader(protoData))
+	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, bytes.NewReader(encoded))
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
@@ -233,7 +238,11 @@ func (e *orchestratorExporter) sendToOrchestratorEndpoint(ctx context.Context, p
 	// Set headers
 	req.Header.Set("Content-Type", "application/x-protobuf")
 	req.Header.Set("DD-API-KEY", string(e.config.API.Key))
-	req.Header.Set("DD-AGENT-HOSTNAME", e.hostname)
+	req.Header.Set("X-Dd-Hostname", e.hostname)
+	req.Header.Set("X-DD-Agent-Timestamp", strconv.Itoa(int(time.Now().Unix())))
+	req.Header.Set("X-Dd-Orchestrator-ClusterID", "12345689")
+	req.Header.Set("DD-EVP-ORIGIN", "agent")
+	req.Header.Set("DD-EVP-ORIGIN-VERSION", "1.0.0")
 
 	// Send the request
 	resp, err := e.httpClient.Do(req)
@@ -243,8 +252,73 @@ func (e *orchestratorExporter) sendToOrchestratorEndpoint(ctx context.Context, p
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusAccepted {
-		return fmt.Errorf("orchestrator endpoint returned status: %d", resp.StatusCode)
+		return fmt.Errorf("orchestrator endpoint:%s returned status: %d", endpoint, resp.StatusCode)
 	}
 
 	return nil
 }
+
+type NodeType int
+
+const (
+	// K8sUnsetType represents a Kubernetes unset type
+	K8sUnsetType NodeType = 0
+	// K8sPod represents a Kubernetes Pod
+	K8sPod = 1
+	// K8sReplicaSet represents a Kubernetes ReplicaSet
+	K8sReplicaSet = 2
+	// K8sService represents a Kubernetes Service
+	K8sService = 3
+	// K8sNode represents a Kubernetes Node
+	K8sNode = 4
+	// K8sCluster represents a Kubernetes Cluster
+	K8sCluster = 5
+	// K8sJob represents a Kubernetes Job
+	K8sJob = 6
+	// K8sCronJob represents a Kubernetes CronJob
+	K8sCronJob = 7
+	// K8sDaemonSet represents a Kubernetes DaemonSet
+	K8sDaemonSet = 8
+	// K8sStatefulSet represents a Kubernetes StatefulSet
+	K8sStatefulSet = 9
+	// K8sPersistentVolume represents a Kubernetes PersistentVolume
+	K8sPersistentVolume = 10
+	// K8sPersistentVolumeClaim represents a Kubernetes PersistentVolumeClaim
+	K8sPersistentVolumeClaim = 11
+	// K8sRole represents a Kubernetes Role
+	K8sRole = 12
+	// K8sRoleBinding represents a Kubernetes RoleBinding
+	K8sRoleBinding = 13
+	// K8sClusterRole represents a Kubernetes ClusterRole
+	K8sClusterRole = 14
+	// K8sClusterRoleBinding represents a Kubernetes ClusterRoleBinding
+	K8sClusterRoleBinding = 15
+	// K8sServiceAccount represents a Kubernetes ServiceAccount
+	K8sServiceAccount = 16
+	// K8sIngress represents a Kubernetes Ingress
+	K8sIngress = 17
+	// K8sDeployment represents a Kubernetes Deployment
+	K8sDeployment = 18
+	// K8sNamespace represents a Kubernetes Namespace
+	K8sNamespace = 19
+	// K8sCRD represents a Kubernetes CRD
+	K8sCRD = 20
+	// K8sCR represents a Kubernetes CR
+	K8sCR = 21
+	// K8sVerticalPodAutoscaler represents a Kubernetes VerticalPod Autoscaler
+	K8sVerticalPodAutoscaler = 22
+	// K8sHorizontalPodAutoscaler represents a Kubernetes Horizontal Pod Autoscaler
+	K8sHorizontalPodAutoscaler = 23
+	// K8sNetworkPolicy represents a Kubernetes NetworkPolicy
+	K8sNetworkPolicy = 24
+	// K8sLimitRange represents a Kubernetes LimitRange
+	K8sLimitRange = 25
+	// K8sStorageClass represents a Kubernetes StorageClass
+	K8sStorageClass = 26
+	// K8sPodDisruptionBudget represents a Kubernetes PodDisruptionBudget
+	K8sPodDisruptionBudget = 27
+	// K8sEndpointSlice represents a Kubernetes EndpointSlice
+	K8sEndpointSlice = 28
+	// ECSTask represents an ECS Task
+	ECSTask = 150
+)

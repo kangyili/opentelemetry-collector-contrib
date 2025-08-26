@@ -10,18 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/DataDog/datadog-agent/comp/otelcol/logsagentpipeline"
-	"github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/serializerexporter"
-	"github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/metricsclient"
-	pb "github.com/DataDog/datadog-agent/pkg/proto/pbgo/trace"
-	"github.com/DataDog/datadog-agent/pkg/trace/agent"
-	"github.com/DataDog/datadog-agent/pkg/trace/telemetry"
-	"github.com/DataDog/datadog-agent/pkg/trace/timing"
-	"github.com/DataDog/datadog-agent/pkg/trace/writer"
-	"github.com/DataDog/datadog-agent/pkg/util/log"
-	"github.com/DataDog/opentelemetry-mapping-go/pkg/inframetadata"
-	"github.com/DataDog/opentelemetry-mapping-go/pkg/otlp/attributes"
-	"github.com/DataDog/opentelemetry-mapping-go/pkg/otlp/attributes/source"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/datadogexporter/internal/orchestrator"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config/confighttp"
 	"go.opentelemetry.io/collector/config/configretry"
@@ -36,8 +25,21 @@ import (
 	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/DataDog/datadog-agent/comp/otelcol/logsagentpipeline"
+	"github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/logsagentexporter"
+	"github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/serializerexporter"
+	"github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/metricsclient"
+	pb "github.com/DataDog/datadog-agent/pkg/proto/pbgo/trace"
+	"github.com/DataDog/datadog-agent/pkg/trace/agent"
+	"github.com/DataDog/datadog-agent/pkg/trace/telemetry"
+	"github.com/DataDog/datadog-agent/pkg/trace/timing"
+	"github.com/DataDog/datadog-agent/pkg/trace/writer"
+	"github.com/DataDog/datadog-agent/pkg/util/log"
+	"github.com/DataDog/opentelemetry-mapping-go/pkg/inframetadata"
+	"github.com/DataDog/opentelemetry-mapping-go/pkg/otlp/attributes"
+	"github.com/DataDog/opentelemetry-mapping-go/pkg/otlp/attributes/source"
+
 	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/datadogexporter/internal/metadata"
-	"github.com/open-telemetry/opentelemetry-collector-contrib/exporter/datadogexporter/internal/orchestrator"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/datadog/clientutil"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/datadog/hostmetadata"
 	datadogconfig "github.com/open-telemetry/opentelemetry-collector-contrib/pkg/datadog/config"
@@ -579,15 +581,6 @@ func (f *factory) createLogsExporter(
 			}
 			return nil
 		}
-	case cfg.Orchestrator.ClusterName != "":
-		// Use orchestrator exporter for Kubernetes resource manifests
-		hostnameProvider := orchestrator.NewHostnameProvider(hostProvider)
-		exp, err := newOrchestratorExporter(set, cfg, hostnameProvider)
-		if err != nil {
-			cancel()
-			return nil, err
-		}
-		pusher = exp.ConsumeLogs
 	default:
 		la, exp, err := newLogsAgentExporter(ctx, set, cfg, hostProvider, f.gatewayUsage)
 		if err != nil {
@@ -596,6 +589,17 @@ func (f *factory) createLogsExporter(
 		}
 		logsAgent = la
 		pusher = exp.ConsumeLogs
+
+		if cfg.Orchestrator.ClusterName != "" {
+			// Use orchestrator exporter for Kubernetes resource manifests
+			hostnameProvider := orchestrator.NewHostnameProvider(hostProvider)
+			oexp, err := newOrchestratorExporter(set, cfg, hostnameProvider)
+			if err != nil {
+				cancel()
+				return nil, err
+			}
+			pusher = getConsumeLogsFunc(exp, oexp)
+		}
 	}
 	return exporterhelper.NewLogs(
 		ctx,
@@ -615,4 +619,32 @@ func (f *factory) createLogsExporter(
 			return nil
 		}),
 	)
+}
+
+func getConsumeLogsFunc(exp *logsagentexporter.Exporter, o *orchestratorExporter) func(ctx context.Context, ld plog.Logs) error {
+	return func(ctx context.Context, ld plog.Logs) error {
+		useO := isK8s(ld)
+
+		if useO {
+			return o.ConsumeLogs(ctx, ld)
+		}
+		return exp.ConsumeLogs(ctx, ld)
+	}
+}
+
+func isK8s(ld plog.Logs) bool {
+	for i := 0; i < ld.ResourceLogs().Len(); i++ {
+		resourceLogs := ld.ResourceLogs().At(i)
+		for j := 0; j < resourceLogs.ScopeLogs().Len(); j++ {
+			scopeLogs := resourceLogs.ScopeLogs().At(j)
+			for k := 0; k < scopeLogs.LogRecords().Len(); k++ {
+				logRecord := scopeLogs.LogRecords().At(k)
+				_, ok := logRecord.Attributes().Get("source")
+				if ok {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
