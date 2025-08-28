@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/DataDog/datadog-agent/pkg/util/hostname/validate"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/config/confighttp"
 	"go.opentelemetry.io/collector/config/confignet"
@@ -19,6 +18,8 @@ import (
 	"go.opentelemetry.io/collector/confmap"
 	"go.opentelemetry.io/collector/exporter/exporterhelper"
 	"go.uber.org/zap"
+
+	"github.com/DataDog/datadog-agent/pkg/util/hostname/validate"
 )
 
 var (
@@ -386,15 +387,6 @@ func CreateDefaultConfig() component.Config {
 			TCPAddrConfig: confignet.TCPAddrConfig{
 				Endpoint: "https://orchestrator.datadoghq.com",
 			},
-			UseCompression:      true,
-			CompressionLevel:    6,
-			BatchWait:           5,
-			ClusterChecksEnabled: true,
-			CollectEvents:        true,
-			LeaderElection:       false,
-			LeaderLeaseDuration:  15,
-			LeaderRenewDeadline:  10,
-			LeaderRetryPeriod:    2,
 		},
 
 		HostMetadata: HostMetadataConfig{
