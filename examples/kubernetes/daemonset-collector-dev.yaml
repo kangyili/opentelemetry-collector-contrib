@@ -18,24 +18,62 @@ clusterRole:
   create: true
   rules:
     - apiGroups:
-        - ''
+        - ""
       resources:
-        - 'pods'
-        - 'nodes'
-        - 'namespaces'
-        - 'services'
-        - 'endpoints'
-        - 'configmaps'
-        - 'persistentvolumeclaims'
-        - 'persistentvolumes'
+        - namespaces
+        - nodes
+        - pods
+        - serviceaccounts
+        - services
+        - customresourcedefinitions
+        - daemonsets
+        - deployments
+        - replicasets
+        - statefulsets
+        - horizontalpodautoscalers
+        - cronjobs
+        - jobs
+        - endpointslices
+        - ingresses
+        - networkpolicies
+        - poddisruptionbudgets
+        - clusterrolebindings
+        - clusterroles
+        - rolebindings
+        - roles
       verbs:
-        - 'get'
-        - 'list'
-        - 'watch'
+        - get
+        - watch
+        - list
+    - apiGroups:
+        - apps
+      resources:
+        - replicasets
+      verbs:
+        - get
+        - list
+        - watch
+    - apiGroups:
+        - argoproj.io
+      resources:
+        - rollouts
+      verbs:
+        - get
+        - list
+        - watch
     - apiGroups: [ "" ]
-      resources: [ "nodes/stats", "nodes/proxy"]
-      verbs: [ "get" ]
+      resources: [ "nodes", "nodes/stats", "nodes/proxy" ]
+      verbs: [ "get", "list", "watch" ]
 
+
+presets:
+  logsCollection:
+    enabled: true
+    includeCollectorLogs: true
+  kubernetesAttributes:
+    enabled: true
+    extractAllPodLabels: true
+    extractAllPodAnnotations: true
 
 config:
   exporters:
@@ -45,25 +83,22 @@ config:
         trace_buffer: 500
       hostname: "otelcol-kangyi"
       api:
-        site: ****
-        key: ****
+        site: *****
+        key: *****
       orchestrator:
         cluster_name: "kangyi-otel-cluster"
-        endpoints:
-          - endpoint: ****
-            key: ***
+
   connectors:
     datadog/connector:
 
-#  processors:
-#    attributes/k8sobjects:
-#      actions:
-#        - key: source
-#          value: k8sobjects-otelcol
-#          action: insert
-#        - key: data_type
-#          value: k8s-oetcol
-#          action: insert
+  processors:
+    batch: { }
+    resource/cluster:
+      attributes:
+        - key: k8s.cluster.name
+          value: kangyi-otel-cluster
+          action: upsert
+
   receivers:
     otlp:
       protocols:
@@ -71,43 +106,68 @@ config:
           endpoint: 0.0.0.0:4318
         grpc:
           endpoint: 0.0.0.0:4317
+
     filelog:
-      include_file_path: true
-      poll_interval: 500ms
       include:
-        - /var/log/containers/*.log
+        - /var/log/pods/*/*/*.log
+      start_at: end
+      include_file_path: true
+      include_file_name: false
+
     k8sobjects:
       auth_type: serviceAccount
       objects:
-        - name: configmaps
-          mode: pull
-          interval: 15s
-        - name: limitranges
-          mode: pull
-          interval: 15s
         - name: namespaces
           mode: pull
           interval: 15s
         - name: nodes
           mode: pull
           interval: 15s
-        - name: persistentvolumeclaims
-          mode: pull
-          interval: 15s
-        - name: persistentvolumes
-          mode: pull
-          interval: 15s
         - name: pods
           mode: pull
           interval: 15s
+#        - name: pods
+#          mode: watch
+#        - name: rollouts
+#          group: argoproj.io
+#          mode: pull
+#          interval: 15s
+
+    kubeletstats:
+      collection_interval: 15s
+      auth_type: serviceAccount
+      endpoint: https://${K8S_NODE_NAME}:10250
+      insecure_skip_verify: true
+
+#    prometheus:
+#      config:
+#        scrape_configs:
+#          - job_name: kube-state-metrics
+#            scrape_interval: 30s
+#            metrics_path: /metrics
+#            static_configs:
+#              - targets:
+#                  - kube-state-metrics.kube-state-metrics.svc:8080
 
   service:
     pipelines:
-#      logs/orchestrator:
-#        receivers: [ k8sobjects ]
-#        processors: [ batch , attributes/k8sobjects ]
-#        exporters: [ datadog ]
       logs:
-        receivers: [ otlp ,filelog, k8sobjects]
-        processors: [  batch ]
+        receivers: [ otlp ,filelog]
+        processors: [ resource/cluster,batch ]
+        exporters: [ datadog ]
+
+      logs/k8s:
+        receivers: [ k8sobjects ]
+        processors: [ resource/cluster,batch ]
+        exporters: [ datadog ]
+
+      metrics/k8s:
+        #receivers: [ prometheus,kubeletstats ]
+        receivers: [ kubeletstats ]
+        processors: [resource/cluster,batch ]
+        exporters: [ datadog ]
+
+      traces:
+        receivers: [ otlp ]
+        processors: [ resource/cluster, batch ]
         exporters: [ datadog ]

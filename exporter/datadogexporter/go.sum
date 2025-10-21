@@ -32,8 +32,8 @@ github.com/AzureAD/microsoft-authentication-library-for-go v1.4.2/go.mod h1:wP83
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/Code-Hex/go-generics-cache v1.5.1 h1:6vhZGc5M7Y/YD8cIUcY8kcuQLB4cHR7U+0KMqAA0KcU=
 github.com/Code-Hex/go-generics-cache v1.5.1/go.mod h1:qxcC9kRVrct9rHeiYpFWSoW1vxyillCVzX13KZG8dl4=
-github.com/DataDog/agent-payload/v5 v5.0.164-0.20250828093710-e6d1e87f5312 h1:5Qed+J3s0h5c+iwmbC4zpQVYQn9mOpvFTbsvT82T+yU=
-github.com/DataDog/agent-payload/v5 v5.0.164-0.20250828093710-e6d1e87f5312/go.mod h1:U2XeTRBMNHddAf4C1g2MnYXiaHQhBNQuItMYZ+PFJh4=
+github.com/DataDog/agent-payload/v5 v5.0.169 h1:fhUMUxOqAd/OhfewQ8Iq+WTV5peH4fpf2eUs6Q4W2sE=
+github.com/DataDog/agent-payload/v5 v5.0.169/go.mod h1:9PtvPKsgZVTTvqgYtcwB4bjXAkxYzC2wzSXSadPRHv8=
 github.com/DataDog/datadog-agent/comp/api/api/def v0.69.2 h1:BSm7nErwDb7Alb3lPXKYXkolbNZqAmlK9levs2JFpRA=
 github.com/DataDog/datadog-agent/comp/api/api/def v0.69.2/go.mod h1:WIxCj5ak9u8EWss6uIT9hdz30rBkxavIrGHzgBl92jQ=
 github.com/DataDog/datadog-agent/comp/core/config v0.69.2 h1:ROncx1ORu5N6lFGgxVLH2WnpQxj1uLve2WQlvjnwYzM=
@@ -72,8 +72,8 @@ github.com/DataDog/datadog-agent/comp/otelcol/logsagentpipeline v0.67.0-devel.0.
 github.com/DataDog/datadog-agent/comp/otelcol/logsagentpipeline v0.67.0-devel.0.20250507144401-a64863d1e01a/go.mod h1:KHQXmfnOV1iDqkcqd0utzPWGwBe2WGWxXnr40fNgYOw=
 github.com/DataDog/datadog-agent/comp/otelcol/logsagentpipeline/logsagentpipelineimpl v0.67.0-devel.0.20250507144401-a64863d1e01a h1:3xG2IDbke25n4ppUbwOQMfwFK1J2rKbzy36ubsXpS4A=
 github.com/DataDog/datadog-agent/comp/otelcol/logsagentpipeline/logsagentpipelineimpl v0.67.0-devel.0.20250507144401-a64863d1e01a/go.mod h1:3isnPyXgHj+fC3JWbzihHa7mPmxpQxUcOnZTxdMvJ+E=
-github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/logsagentexporter v0.67.0-devel.0.20250828101621-95036765e9a3 h1:lbsu6Q1kYdxFxp6TywHIv2y6dkmxOm26R4gDggxdSes=
-github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/logsagentexporter v0.67.0-devel.0.20250828101621-95036765e9a3/go.mod h1:Ptu+ltoN8R2UTDMAOHDi0XWztLGoP7hDQlF1Fwv+B1o=
+github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/logsagentexporter v0.67.0-devel.0.20251015133813-e50d20dd33d8 h1:dBBxRfbPAWVFnL3ciwVL+i9nz8h/gBFLQBBEqADgMaI=
+github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/logsagentexporter v0.67.0-devel.0.20251015133813-e50d20dd33d8/go.mod h1:DuFswW1WibZ2kI61V7RAcer5rZXF2eliHPa6eXBgboA=
 github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/serializerexporter v0.69.0-devel.0.20250630223051-02255cc64e1f h1:s9lN0n3fDEzgxhMS1iv+dBJQq2T+z8uDzCr1yXUrYo4=
 github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/serializerexporter v0.69.0-devel.0.20250630223051-02255cc64e1f/go.mod h1:z298Zjff0t5nmnPpzZbODiL8T40eXaZvJUuhTxM5kbU=
 github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/metricsclient v0.67.0 h1:HR+pSRjYHA7wGrQr3Y9uSHAYohGGpeymbzHYxaxZXuw=
