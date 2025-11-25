@@ -8,7 +8,7 @@ require (
 	github.com/DataDog/datadog-agent/comp/logs/agent/config v0.73.0-rc.9
 	github.com/DataDog/datadog-agent/comp/otelcol/logsagentpipeline v0.73.0-rc.9
 	github.com/DataDog/datadog-agent/comp/otelcol/logsagentpipeline/logsagentpipelineimpl v0.73.0-rc.9
-	github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/logsagentexporter v0.73.0-rc.9
+	github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/logsagentexporter v0.73.0-devel.0.20251123155152-cc7b409e194e
 	github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/serializerexporter v0.73.0-rc.9
 	github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/metricsclient v0.73.0-rc.9
 	github.com/DataDog/datadog-agent/comp/otelcol/otlp/testutil v0.73.0-rc.9
@@ -131,6 +131,7 @@ require (
 require (
 	github.com/DataDog/datadog-agent/comp/api/api/def v0.73.0-rc.9 // indirect
 	github.com/DataDog/datadog-agent/comp/core/secrets/noop-impl v0.73.0-rc.9 // indirect
+	github.com/DataDog/datadog-agent/pkg/orchestrator/util v0.0.0-20251120165911-0b75c97e8b50 // indirect
 	github.com/DataDog/go-tuf v1.1.1-0.5.2 // indirect
 	github.com/DataDog/gohai v0.0.0-20230524154621-4316413895ee // indirect
 	github.com/DataDog/mmh3 v0.0.0-20210722141835-012dc69a9e49 // indirect
@@ -243,7 +244,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	github.com/tinylib/msgp v1.4.0 // indirect
+	github.com/tinylib/msgp v1.5.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.15 // indirect
 	github.com/tklauser/numcpus v0.10.0 // indirect
 	github.com/twmb/murmur3 v1.1.8 // indirect
@@ -284,9 +285,9 @@ require (
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.45.0 // indirect
-	golang.org/x/exp v0.0.0-20251009144603-d2f985daa21b // indirect
+	golang.org/x/exp v0.0.0-20251113190631-e25ba8c21ef6 // indirect
 	golang.org/x/net v0.47.0 // indirect
-	golang.org/x/oauth2 v0.32.0 // indirect
+	golang.org/x/oauth2 v0.33.0 // indirect
 	golang.org/x/sync v0.18.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/term v0.37.0 // indirect

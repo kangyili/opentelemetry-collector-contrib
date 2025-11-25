@@ -49,8 +49,8 @@ github.com/DataDog/datadog-agent/comp/otelcol/logsagentpipeline v0.73.0-rc.9 h1:
 github.com/DataDog/datadog-agent/comp/otelcol/logsagentpipeline v0.73.0-rc.9/go.mod h1:SgowqHieNFawvnQnj156zPAnpbXojoGohrNHb531fQk=
 github.com/DataDog/datadog-agent/comp/otelcol/logsagentpipeline/logsagentpipelineimpl v0.73.0-rc.9 h1:KFcLjEHElxV8N2h/Wa4Oby8RFjRXLfuPWMRFb5bwYUE=
 github.com/DataDog/datadog-agent/comp/otelcol/logsagentpipeline/logsagentpipelineimpl v0.73.0-rc.9/go.mod h1:XGaoENesuzOwI0SuyVfsaNYYU8CRKd2nIFgLlvPcrVY=
-github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/logsagentexporter v0.73.0-rc.9 h1:u67nO+yZD9IQCO50+SS+6OKEIvfgKAWVZ1Or6ca4sxM=
-github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/logsagentexporter v0.73.0-rc.9/go.mod h1:w4NQBcCJOeSO275JHWeQE9nqJoFY5/vX+m0Z8BCatV0=
+github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/logsagentexporter v0.73.0-devel.0.20251123155152-cc7b409e194e h1:QH+MpGNUW5e+/C7rThl3Py5YVu2Hn9bjv6tGeDesGb0=
+github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/logsagentexporter v0.73.0-devel.0.20251123155152-cc7b409e194e/go.mod h1:VDz2K0H9PPyVB8eKRm+LkW1OJQs4vyyefOnTieAeDh0=
 github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/serializerexporter v0.73.0-rc.9 h1:gv6jzxtPmi7odQVniYdxqg3d1qgNvorFbM5vIFwTdbE=
 github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/exporter/serializerexporter v0.73.0-rc.9/go.mod h1:SoqX1KKdmXqKUOTWmsDlNrcvGoAJfTDsoi3YnI2pBOU=
 github.com/DataDog/datadog-agent/comp/otelcol/otlp/components/metricsclient v0.73.0-rc.9 h1:r+wSnpq0t4f3JCZP/rroDnERP6pgS+UMNrq0/GNR7LA=
@@ -135,6 +135,8 @@ github.com/DataDog/datadog-agent/pkg/opentelemetry-mapping-go/otlp/rum v0.73.0-r
 github.com/DataDog/datadog-agent/pkg/opentelemetry-mapping-go/otlp/rum v0.73.0-rc.9/go.mod h1:cR+tJ/bf8vMvlI5yvcb672WkKHkRW9sM8arcCJz9Z9k=
 github.com/DataDog/datadog-agent/pkg/orchestrator/model v0.73.0-rc.9 h1:sH+8QkvZ+EZQF0Svo7cV4syOGlmJD1v6gmZyAsWCDYI=
 github.com/DataDog/datadog-agent/pkg/orchestrator/model v0.73.0-rc.9/go.mod h1:zV2jDqipTYKx3QHPHcAB1rNbf7izaBiIArOUdyD/whM=
+github.com/DataDog/datadog-agent/pkg/orchestrator/util v0.0.0-20251120165911-0b75c97e8b50 h1:dI1TE4KAczmhORUgHMP/1p0GH7GxXMTS2TvCo3A9gQc=
+github.com/DataDog/datadog-agent/pkg/orchestrator/util v0.0.0-20251120165911-0b75c97e8b50/go.mod h1:Gcwx1rDexVebPwoirDcyQ04iWAyq9eA68u2UUW+wsKU=
 github.com/DataDog/datadog-agent/pkg/process/util/api v0.73.0-rc.9 h1:Q8khANjwpUauO51aLvMl+RJcwt4nwvHVrcdOAei9L1A=
 github.com/DataDog/datadog-agent/pkg/process/util/api v0.73.0-rc.9/go.mod h1:5amRpr2UTlLhCXvivJUeTYaTopAsvtaKITw3fqjILDE=
 github.com/DataDog/datadog-agent/pkg/proto v0.73.0-rc.9 h1:cbTpcJg3+RY+y8nCNjgFdZJSG2Uw8l5/bQDJF7DDtJk=
@@ -516,8 +518,8 @@ github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o
 github.com/stretchr/testify v1.8.2/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
-github.com/tinylib/msgp v1.4.0 h1:SYOeDRiydzOw9kSiwdYp9UcBgPFtLU2WDHaJXyHruf8=
-github.com/tinylib/msgp v1.4.0/go.mod h1:cvjFkb4RiC8qSBOPMGPSzSAx47nAsfhLVTCZZNuHv5o=
+github.com/tinylib/msgp v1.5.0 h1:GWnqAE54wmnlFazjq2+vgr736Akg58iiHImh+kPY2pc=
+github.com/tinylib/msgp v1.5.0/go.mod h1:cvjFkb4RiC8qSBOPMGPSzSAx47nAsfhLVTCZZNuHv5o=
 github.com/tklauser/go-sysconf v0.3.11/go.mod h1:GqXfhXY3kiPa0nAXPDIQIWzJbMCB7AmcWpGR8lSZfqI=
 github.com/tklauser/go-sysconf v0.3.15 h1:VE89k0criAymJ/Os65CSn1IXaol+1wrsFHEB8Ol49K4=
 github.com/tklauser/go-sysconf v0.3.15/go.mod h1:Dmjwr6tYFIseJw7a3dRLJfsHAMXZ3nEnL/aZY+0IuI4=
@@ -667,8 +669,8 @@ golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550/go.mod h1:yigFU9vqHzYiE8U
 golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9/go.mod h1:LzIPMQfyMNhhGPhUkYOs5KpL4U8rLKemX1yGLhDgUto=
 golang.org/x/crypto v0.45.0 h1:jMBrvKuj23MTlT0bQEOBcAE0mjg8mK9RXFhRH6nyF3Q=
 golang.org/x/crypto v0.45.0/go.mod h1:XTGrrkGJve7CYK7J8PEww4aY7gM3qMCElcJQ8n8JdX4=
-golang.org/x/exp v0.0.0-20251009144603-d2f985daa21b h1:18qgiDvlvH7kk8Ioa8Ov+K6xCi0GMvmGfGW0sgd/SYA=
-golang.org/x/exp v0.0.0-20251009144603-d2f985daa21b/go.mod h1:j/pmGrbnkbPtQfxEe5D0VQhZC6qKbfKifgD0oM7sR70=
+golang.org/x/exp v0.0.0-20251113190631-e25ba8c21ef6 h1:zfMcR1Cs4KNuomFFgGefv5N0czO2XZpUbxGUy8i8ug0=
+golang.org/x/exp v0.0.0-20251113190631-e25ba8c21ef6/go.mod h1:46edojNIoXTNOhySWIWdix628clX9ODXwPsQuG6hsK0=
 golang.org/x/mod v0.2.0/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=
 golang.org/x/mod v0.3.0/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=
 golang.org/x/mod v0.4.2/go.mod h1:s0Qsj1ACt9ePp/hMypM3fl4fZqREWJwdYDEqhRiZZUA=
@@ -681,8 +683,8 @@ golang.org/x/net v0.0.0-20210405180319-a5a99cb37ef4/go.mod h1:p54w0d4576C0XHj96b
 golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f/go.mod h1:9nx3DQGgdP8bBQD5qxJ1jj9UTztislL4KSBs9R2vV5Y=
 golang.org/x/net v0.47.0 h1:Mx+4dIFzqraBXUugkia1OOvlD6LemFo1ALMHjrXDOhY=
 golang.org/x/net v0.47.0/go.mod h1:/jNxtkgq5yWUGYkaZGqo27cfGZ1c5Nen03aYrrKpVRU=
-golang.org/x/oauth2 v0.32.0 h1:jsCblLleRMDrxMN29H3z/k1KliIvpLgCkE6R8FXXNgY=
-golang.org/x/oauth2 v0.32.0/go.mod h1:lzm5WQJQwKZ3nwavOZ3IS5Aulzxi68dUSgRHujetwEA=
+golang.org/x/oauth2 v0.33.0 h1:4Q+qn+E5z8gPRJfmRy7C2gGG3T4jIprK6aSYgTXGRpo=
+golang.org/x/oauth2 v0.33.0/go.mod h1:lzm5WQJQwKZ3nwavOZ3IS5Aulzxi68dUSgRHujetwEA=
 golang.org/x/sync v0.0.0-20190423024810-112230192c58/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
@@ -727,8 +729,8 @@ golang.org/x/tools v0.0.0-20200619180055-7c47624df98f/go.mod h1:EkVYQZoAsY45+roY
 golang.org/x/tools v0.0.0-20210106214847-113979e3529a/go.mod h1:emZCQorbCU4vsT4fOWvOPXz4eW1wZW4PmDk9uLelYpA=
 golang.org/x/tools v0.1.1/go.mod h1:o0xws9oXOQQZyjljx8fwUC0k7L1pTE6eaCbjGeHmOkk=
 golang.org/x/tools v0.1.8/go.mod h1:nABZi5QlRsZVlzPpHl034qft6wpY4eDcsTt5AaioBiU=
-golang.org/x/tools v0.38.0 h1:Hx2Xv8hISq8Lm16jvBZ2VQf+RLmbd7wVUsALibYI/IQ=
-golang.org/x/tools v0.38.0/go.mod h1:yEsQ/d/YK8cjh0L6rZlY8tgtlKiBNTL14pGDJPJpYQs=
+golang.org/x/tools v0.39.0 h1:ik4ho21kwuQln40uelmciQPp9SipgNDdrafrYA4TmQQ=
+golang.org/x/tools v0.39.0/go.mod h1:JnefbkDPyD8UU2kI5fuf8ZX4/yUeh9W877ZeBONxUqQ=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
