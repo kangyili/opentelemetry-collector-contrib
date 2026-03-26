@@ -19,6 +19,39 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/datadog/hostmetadata/provider"
 )
 
+// BuildK8sAliasProvider constructs a HostAliasProvider for the Kubernetes nodeName-clusterName alias.
+// Returns (nil, nil) when not running in Kubernetes.
+func BuildK8sAliasProvider(set component.TelemetrySettings) (HostAliasProvider, error) {
+	azureProvider := azure.NewProvider()
+	ec2Provider, err := ec2.NewProvider(set.Logger)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build EC2 provider for k8s alias: %w", err)
+	}
+	gcpProvider := gcp.NewProvider()
+
+	clusterNameProvider, err := provider.ChainCluster(
+		set.Logger,
+		map[string]provider.ClusterNameProvider{
+			"azure": azureProvider,
+			"ec2":   ec2Provider,
+			"gcp":   gcpProvider,
+		},
+		[]string{"azure", "ec2", "gcp"},
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build cluster name provider for k8s alias: %w", err)
+	}
+
+	p, err := k8s.NewProvider(set.Logger, clusterNameProvider)
+	if err != nil {
+		return nil, err
+	}
+	if !p.IsAvailable() {
+		return nil, nil
+	}
+	return p, nil
+}
+
 func GetSourceProvider(set component.TelemetrySettings, configHostname string, timeout time.Duration) (source.Provider, error) {
 	ecs, err := ecs.NewProvider(set)
 	if err != nil {

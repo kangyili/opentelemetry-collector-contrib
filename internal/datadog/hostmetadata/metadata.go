@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/DataDog/datadog-agent/pkg/opentelemetry-mapping-go/inframetadata"
@@ -87,6 +88,16 @@ func fillHostMetadata(params exporter.Settings, pcfg PusherConfig, p source.Prov
 		systemHostInfo := system.GetHostInfo(params.Logger)
 		hm.Meta.SocketHostname = systemHostInfo.OS
 		hm.Meta.SocketFqdn = systemHostInfo.FQDN
+	}
+
+	for _, ap := range pcfg.HostAliasProviders {
+		alias, err := ap.HostAlias(context.Background())
+		if err != nil || alias == "" {
+			continue
+		}
+		if alias != hm.InternalHostname && !slices.Contains(hm.Meta.HostAliases, alias) {
+			hm.Meta.HostAliases = append(hm.Meta.HostAliases, alias)
+		}
 	}
 }
 
