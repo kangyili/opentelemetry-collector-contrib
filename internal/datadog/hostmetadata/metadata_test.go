@@ -65,7 +65,7 @@ func TestFillHostMetadata(t *testing.T) {
 		ConfigTags:     []string{"key1:tag1", "key2:tag2", "env:prod"},
 	}
 
-	hostProvider, err := GetSourceProvider(componenttest.NewNopTelemetrySettings(), "hostname", 31*time.Second)
+	hostProvider, _, err := GetSourceAndAliasProviders(componenttest.NewNopTelemetrySettings(), "hostname", 31*time.Second)
 	require.NoError(t, err)
 
 	metadata := payload.NewEmpty()
@@ -233,7 +233,7 @@ func TestPusher(t *testing.T) {
 	params := exportertest.NewNopSettings(exportertest.NopType)
 	params.BuildInfo = mockBuildInfo
 
-	hostProvider, err := GetSourceProvider(componenttest.NewNopTelemetrySettings(), "source-hostname", 31*time.Second)
+	hostProvider, _, err := GetSourceAndAliasProviders(componenttest.NewNopTelemetrySettings(), "source-hostname", 31*time.Second)
 	require.NoError(t, err)
 
 	attrs := testutil.NewAttributeMap(map[string]string{
@@ -282,7 +282,7 @@ func TestFillHostMetadataWithAliasProviders(t *testing.T) {
 			HostAliasProviders: []HostAliasProvider{&mockAliasProvider{alias: "my-node-my-cluster"}},
 		}
 
-		hostProvider, err := GetSourceProvider(componenttest.NewNopTelemetrySettings(), "config-hostname", 31*time.Second)
+		hostProvider, _, err := GetSourceAndAliasProviders(componenttest.NewNopTelemetrySettings(), "config-hostname", 31*time.Second)
 		require.NoError(t, err)
 
 		metadata := payload.NewEmpty()
@@ -297,7 +297,7 @@ func TestFillHostMetadataWithAliasProviders(t *testing.T) {
 			HostAliasProviders: []HostAliasProvider{&mockAliasProvider{alias: "my-node-my-cluster"}},
 		}
 
-		hostProvider, err := GetSourceProvider(componenttest.NewNopTelemetrySettings(), "my-node-my-cluster", 31*time.Second)
+		hostProvider, _, err := GetSourceAndAliasProviders(componenttest.NewNopTelemetrySettings(), "my-node-my-cluster", 31*time.Second)
 		require.NoError(t, err)
 
 		metadata := payload.NewEmpty()
@@ -318,7 +318,7 @@ func TestFillHostMetadataWithAliasProviders(t *testing.T) {
 			HostAliasProviders: []HostAliasProvider{&mockAliasProvider{alias: "my-node-my-cluster"}},
 		}
 
-		hostProvider, err := GetSourceProvider(componenttest.NewNopTelemetrySettings(), "config-hostname", 31*time.Second)
+		hostProvider, _, err := GetSourceAndAliasProviders(componenttest.NewNopTelemetrySettings(), "config-hostname", 31*time.Second)
 		require.NoError(t, err)
 
 		metadata := payload.NewEmpty()
@@ -340,7 +340,7 @@ func TestFillHostMetadataWithAliasProviders(t *testing.T) {
 			HostAliasProviders: []HostAliasProvider{&mockAliasProvider{err: errors.New("unexpected error")}},
 		}
 
-		hostProvider, err := GetSourceProvider(componenttest.NewNopTelemetrySettings(), "config-hostname", 31*time.Second)
+		hostProvider, _, err := GetSourceAndAliasProviders(componenttest.NewNopTelemetrySettings(), "config-hostname", 31*time.Second)
 		require.NoError(t, err)
 
 		metadata := payload.NewEmpty()
@@ -358,7 +358,7 @@ func TestFillHostMetadataWithAliasProviders(t *testing.T) {
 			},
 		}
 
-		hostProvider, err := GetSourceProvider(componenttest.NewNopTelemetrySettings(), "config-hostname", 31*time.Second)
+		hostProvider, _, err := GetSourceAndAliasProviders(componenttest.NewNopTelemetrySettings(), "config-hostname", 31*time.Second)
 		require.NoError(t, err)
 
 		metadata := payload.NewEmpty()
@@ -373,7 +373,7 @@ func TestFillHostMetadataWithAliasProviders(t *testing.T) {
 			ConfigHostname: "config-hostname",
 		}
 
-		hostProvider, err := GetSourceProvider(componenttest.NewNopTelemetrySettings(), "config-hostname", 31*time.Second)
+		hostProvider, _, err := GetSourceAndAliasProviders(componenttest.NewNopTelemetrySettings(), "config-hostname", 31*time.Second)
 		require.NoError(t, err)
 
 		metadata := payload.NewEmpty()

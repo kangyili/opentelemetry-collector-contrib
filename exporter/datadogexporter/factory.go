@@ -91,9 +91,10 @@ func consumeResource(metadataReporter *inframetadata.Reporter, res pcommon.Resou
 type factory struct {
 	onceMetadata sync.Once
 
-	onceProvider   sync.Once
+	onceProviders  sync.Once
 	sourceProvider source.Provider
-	providerErr    error
+	aliasProviders []hostmetadata.HostAliasProvider
+	providersErr   error
 
 	onceReporter     sync.Once
 	onceStopReporter sync.Once
@@ -104,20 +105,16 @@ type factory struct {
 	attributesTranslator     *attributes.Translator
 	attributesErr            error
 
-	onceK8sAlias     sync.Once
-	k8sAliasProvider hostmetadata.HostAliasProvider
-	k8sAliasErr      error
-
 	registry *featuregate.Registry
 
 	gatewayUsage *attributes.GatewayUsage
 }
 
-func (f *factory) SourceProvider(set component.TelemetrySettings, configHostname string, timeout time.Duration) (source.Provider, error) {
-	f.onceProvider.Do(func() {
-		f.sourceProvider, f.providerErr = hostmetadata.GetSourceProvider(set, configHostname, timeout)
+func (f *factory) SourceAndAliasProviders(set component.TelemetrySettings, configHostname string, timeout time.Duration) (source.Provider, []hostmetadata.HostAliasProvider, error) {
+	f.onceProviders.Do(func() {
+		f.sourceProvider, f.aliasProviders, f.providersErr = hostmetadata.GetSourceAndAliasProviders(set, configHostname, timeout)
 	})
-	return f.sourceProvider, f.providerErr
+	return f.sourceProvider, f.aliasProviders, f.providersErr
 }
 
 func (f *factory) AttributesTranslator(set component.TelemetrySettings) (*attributes.Translator, error) {
@@ -125,17 +122,6 @@ func (f *factory) AttributesTranslator(set component.TelemetrySettings) (*attrib
 		f.attributesTranslator, f.attributesErr = attributes.NewTranslator(set)
 	})
 	return f.attributesTranslator, f.attributesErr
-}
-
-// K8sAliasProvider returns a HostAliasProvider backed by the Kubernetes node name
-// provider. The result is cached after the first call. It returns nil (no error)
-// when not running in Kubernetes; errors are only returned for unexpected setup
-// failures.
-func (f *factory) K8sAliasProvider(set component.TelemetrySettings) (hostmetadata.HostAliasProvider, error) {
-	f.onceK8sAlias.Do(func() {
-		f.k8sAliasProvider, f.k8sAliasErr = hostmetadata.BuildK8sAliasProvider(set)
-	})
-	return f.k8sAliasProvider, f.k8sAliasErr
 }
 
 // Reporter builds and returns an *inframetadata.Reporter.
@@ -248,7 +234,7 @@ func (f *factory) createMetricsExporter(
 		return nil, err
 	}
 	cfg.LogWarnings(set.Logger)
-	hostProvider, err := f.SourceProvider(set.TelemetrySettings, cfg.Hostname, cfg.HostnameDetectionTimeout)
+	hostProvider, aliases, err := f.SourceAndAliasProviders(set.TelemetrySettings, cfg.Hostname, cfg.HostnameDetectionTimeout)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build hostname provider: %w", err)
 	}
@@ -287,11 +273,7 @@ func (f *factory) createMetricsExporter(
 	var pushMetricsFn consumer.ConsumeMetricsFunc
 
 	pcfg := newMetadataConfigfromConfig(cfg)
-	if k8sAlias, aliasErr := f.K8sAliasProvider(set.TelemetrySettings); aliasErr != nil {
-		set.Logger.Warn("failed to build k8s host alias provider", zap.Error(aliasErr))
-	} else if k8sAlias != nil {
-		pcfg.HostAliasProviders = append(pcfg.HostAliasProviders, k8sAlias)
-	}
+	pcfg.HostAliasProviders = append(pcfg.HostAliasProviders, aliases...)
 	// Don't start a `Reporter` if host metadata is disabled.
 	var metadataReporter *inframetadata.Reporter
 	if cfg.HostMetadata.Enabled {
@@ -444,7 +426,7 @@ func (f *factory) createTracesExporter(
 		wg     sync.WaitGroup // waits for agent to exit
 	)
 
-	hostProvider, err := f.SourceProvider(set.TelemetrySettings, cfg.Hostname, cfg.HostnameDetectionTimeout)
+	hostProvider, aliases, err := f.SourceAndAliasProviders(set.TelemetrySettings, cfg.Hostname, cfg.HostnameDetectionTimeout)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build hostname provider: %w", err)
 	}
@@ -464,11 +446,7 @@ func (f *factory) createTracesExporter(
 	}
 
 	pcfg := newMetadataConfigfromConfig(cfg)
-	if k8sAlias, aliasErr := f.K8sAliasProvider(set.TelemetrySettings); aliasErr != nil {
-		set.Logger.Warn("failed to build k8s host alias provider", zap.Error(aliasErr))
-	} else if k8sAlias != nil {
-		pcfg.HostAliasProviders = append(pcfg.HostAliasProviders, k8sAlias)
-	}
+	pcfg.HostAliasProviders = append(pcfg.HostAliasProviders, aliases...)
 	// Don't start a `Reporter` if host metadata is disabled.
 	var metadataReporter *inframetadata.Reporter
 	if cfg.HostMetadata.Enabled {
@@ -544,7 +522,7 @@ func (f *factory) createLogsExporter(
 
 	var pusher consumer.ConsumeLogsFunc
 	var logsAgent logsagentpipeline.LogsAgent
-	hostProvider, err := f.SourceProvider(set.TelemetrySettings, cfg.Hostname, cfg.HostnameDetectionTimeout)
+	hostProvider, aliases, err := f.SourceAndAliasProviders(set.TelemetrySettings, cfg.Hostname, cfg.HostnameDetectionTimeout)
 	if err != nil {
 		return nil, fmt.Errorf("failed to build hostname provider: %w", err)
 	}
@@ -552,11 +530,7 @@ func (f *factory) createLogsExporter(
 	// cancel() runs on shutdown
 
 	pcfg := newMetadataConfigfromConfig(cfg)
-	if k8sAlias, aliasErr := f.K8sAliasProvider(set.TelemetrySettings); aliasErr != nil {
-		set.Logger.Warn("failed to build k8s host alias provider", zap.Error(aliasErr))
-	} else if k8sAlias != nil {
-		pcfg.HostAliasProviders = append(pcfg.HostAliasProviders, k8sAlias)
-	}
+	pcfg.HostAliasProviders = append(pcfg.HostAliasProviders, aliases...)
 	// Don't start a `Reporter` if host metadata is disabled.
 	var metadataReporter *inframetadata.Reporter
 	if cfg.HostMetadata.Enabled {
