@@ -64,12 +64,14 @@ func RecordSpecMetrics(logger *zap.Logger, mb *metadata.MetricsBuilder, c corev1
 	if cs != nil && cs.LastTerminationState.Terminated != nil {
 		e.SetK8sContainerStatusLastTerminatedReason(cs.LastTerminationState.Terminated.Reason)
 	}
-	image, err := docker.ParseImageName(cs.Image)
-	if err != nil {
-		docker.LogParseError(err, cs.Image, logger)
-	} else {
-		e.SetContainerImageName(image.Repository)
-		e.SetContainerImageTag(image.Tag)
+	if cs != nil {
+		image, err := docker.ParseImageName(cs.Image)
+		if err != nil {
+			docker.LogParseError(err, cs.Image, logger)
+		} else {
+			e.SetContainerImageName(image.Repository)
+			e.SetContainerImageTag(image.Tag)
+		}
 	}
 
 	e.SetK8sPodName(pod.Name)
