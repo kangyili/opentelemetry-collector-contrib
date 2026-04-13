@@ -73,7 +73,16 @@ func (o *Observer) startPull(ctx context.Context, resource dynamic.ResourceInter
 
 	if o.config.ResourceVersion != "" {
 		listOption.ResourceVersion = o.config.ResourceVersion
-		listOption.ResourceVersionMatch = metav1.ResourceVersionMatchExact
+		// ResourceVersion "0" means "any version, serve from cache".
+		// For any other explicit version the user pinned to, apply Exact match.
+		// When ResourceVersion is "0", List calls are served from the API server's
+		// watch cache rather than quorum-reading from etcd.
+		// https://kubernetes.io/docs/reference/using-api/api-concepts/#semantics-for-get-and-list
+		if o.config.ResourceVersion == "0" {
+			listOption.ResourceVersionMatch = metav1.ResourceVersionMatchNotOlderThan
+		} else {
+			listOption.ResourceVersionMatch = metav1.ResourceVersionMatchExact
+		}
 	}
 
 	defer ticker.Stop()
