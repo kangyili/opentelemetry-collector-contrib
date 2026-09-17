@@ -19,11 +19,13 @@ import (
 
 	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/k8sconfig"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/k8sinventory"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/receiver/k8sobjectsreceiver/internal/metadata"
 )
 
 const (
 	defaultPullInterval     time.Duration     = time.Hour
 	defaultMode             k8sinventory.Mode = k8sinventory.PullMode
+	defaultResourceVersion                    = "1"
 	defaultCacheSyncTimeout                   = 10 * time.Second
 )
 
@@ -88,10 +90,12 @@ func (c *Config) Validate() error {
 		return errors.New("interval must not be negative")
 	}
 
-	if c.CacheSyncTimeout == 0 {
-		c.CacheSyncTimeout = defaultCacheSyncTimeout
-	} else if c.CacheSyncTimeout < 0 {
-		return errors.New("cache_sync_timeout must be positive")
+	if metadata.ReceiverK8sObjectsUseInformerObserverFeatureGate.IsEnabled() {
+		if c.CacheSyncTimeout == 0 {
+			c.CacheSyncTimeout = defaultCacheSyncTimeout
+		} else if c.CacheSyncTimeout < 0 {
+			return errors.New("cache_sync_timeout must be positive")
+		}
 	}
 
 	for _, object := range c.Objects {
@@ -123,6 +127,10 @@ func (c *Config) Validate() error {
 
 		if object.Mode == k8sinventory.PullMode && object.InitialDelay > 0 && object.InitialDelay >= object.Interval {
 			return errors.New("initial_delay must be less than interval")
+		}
+
+		if c.Storage != nil && object.ResourceVersion != "" {
+			return errors.New("resource_version cannot be set on an object when storage is configured for persistence")
 		}
 
 		if object.Mode == k8sinventory.PullMode && c.IncludeInitialState {
